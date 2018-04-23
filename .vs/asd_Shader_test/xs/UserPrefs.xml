@@ -1,0 +1,17 @@
+﻿<Properties StartupConfiguration="{649DFD06-B5FF-4206-9620-20EEA5D45630}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="asd_Shader_test/Program.fs">
+    <Files>
+      <File FileName="asd_Shader_test/Program.fs" Line="37" Column="9" />
+      <File FileName="asd_Shader_test/Custom_Post_Effect.fs" Line="408" Column="9" />
+      <File FileName="asd_Shader_test/Shader_Objects.fs" Line="72" Column="54" />
+      <File FileName="asd_Shader_test/Player.fs" Line="21" Column="9" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.asd__Shader__test PreferredExecutionTarget="MonoDevelop.Default" />
+</Properties>
