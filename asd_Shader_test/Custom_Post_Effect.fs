@@ -96,7 +96,7 @@ void main() {
     vec2 p = normalized_inPosition();
     vec2 m = normalize(mouse);
     float brightness = 0.0;
-    bool lightened_m = true, inside_object = true;
+    bool lightened_m = true, inside_object = false;
 
 "
         let rectobj_num = objects_data.Rectangle_Objects.Count
@@ -176,7 +176,7 @@ void main() {
                 String.Format("    int light_num = {0};\n", light_num) +
                 if light_num > 0 then
                     String.Format("    bool lightened[{0}] = bool[]({1});\n", light_num, [0..light_num-1].Select(fun x -> "true") |> String.concat ", ") +
-                    String.Format("    bool light_inobj[{0}] = bool[]({1});\n", light_num, [0..light_num-1].Select(fun x -> "false") |> String.concat ", ") +
+                    String.Format("    bool light_incircle[{0}] = bool[]({1});\n", light_num, [0..light_num-1].Select(fun x -> "false") |> String.concat ", ") +
                     String.Format("    vec2 light_pos[{0}] = vec2[]({1});\n", light_num, [0..light_num-1].Select(fun x -> String.Format("normalize(light_pos_{0})", x)) |> String.concat ", ") +
                     String.Format("    float light_brightness[{0}] = float[]({1});\n\n", light_num, [0..light_num-1].Select(fun x -> String.Format("light_brightness_{0}", x)) |> String.concat ", ")
                 else "\n"
@@ -186,66 +186,74 @@ void main() {
             let main_loop =
                 let loop_rect =
                     if rectobj_num > 0 then
-                        [0..rectobj_num-1]
-                            |> List.map (fun rectobj_i -> 
-                                    (
-                                        "    for(int rect_i=0; rect_i < 4; rect_i++) {\n" +
-                                        String.Format("        lightened_m = lightened_m && !in_shadow_line(m, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
+                        "    bool inside_rectobj;\n" + (
+                            [0..rectobj_num-1]
+                                |> List.map (fun rectobj_i -> 
+                                        (
+                                            "    inside_rectobj = true;\n" +
+                                            "    for(int rect_i=0; rect_i < 4; rect_i++) {\n" +
+                                            String.Format("        lightened_m = lightened_m && !in_shadow_line(m, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
 
-                                        if light_num > 0 then
-                                            "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
-                                            "            if(lightened[light_i] && !light_inobj[light_i]) {\n" + 
-                                            String.Format("                light_inobj[light_i] = light_inobj[light_i] || !in_object_line((rectobj_{0}[0] + rectobj_{0}[2] ) / 2.0, light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
-                                            String.Format("                lightened[light_i] = !light_inobj[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
-                                            "            }\n" +
-                                            "        }\n"
-                                        else ""
-                                        + String.Format("        inside_object = inside_object && !in_shadow_line((rectobj_{0}[0] + rectobj_{0}[2] ) / 2.0, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) +
-                                        "    }\n"
+                                            if light_num > 0 then
+                                                "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
+                                                "            if(lightened[light_i]) {\n" +
+                                                String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
+                                                "            }\n" +
+                                                "        }\n"
+                                            else ""
+                                            + String.Format("        inside_rectobj = inside_rectobj && !in_shadow_line((rectobj_{0}[0] + rectobj_{0}[2] ) / 2.0, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) +
+                                            "    }\n" +
+                                            "    inside_object = inside_object || inside_rectobj;\n"
+                                        )
                                     )
-                                )
-                            |> List.fold (fun x y -> x + y) ""
+                                |> List.fold (fun x y -> x + y) ""
+                        )
                     else ""
                 
                 let loop_vertex =
                     if vobj_num > 0 then
-                        [0..vobj_num-1]
-                            |> List.map (fun vobj_i ->
-                                    (
-                                        String.Format("    for(int vertex_i=0; vertex_i < vertex_num[{0}]; vertex_i++) {\n", vobj_i) +
-                                        String.Format("        lightened_m = lightened_m && !in_shadow_line(m, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) + 
-                                        if light_num > 0 then
-                                            "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
-                                            "            if(lightened[light_i] && !light_inobj[light_i]) {\n"+ 
-                                            String.Format("                light_inobj[light_i] = light_inobj[light_i] || !in_object_line((vobj_{0}[0] + vobj_{0}[1] + vobj_{0}[2]) / 3.0, light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) + 
-                                            String.Format("                lightened[light_i] = !light_inobj[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);", vobj_i) + 
-                                            "            }\n"
-                                        else ""
-                                        + "        }\n" +
-                                        String.Format("        inside_object = inside_object && !in_shadow_line((vobj_{0}[0] + vobj_{0}[1] + vobj_{0}[2]) / 3.0, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[vertex_i]))]);\n", vobj_i) +
-                                        "    }\n"
+                        "    bool inside_vobj;\n" + (
+                            [0..vobj_num-1]
+                                |> List.map (fun vobj_i ->
+                                        (
+                                            "    inside_vobj = true;\n" +
+                                            String.Format("    for(int vertex_i=0; vertex_i < vertex_num[{0}]; vertex_i++) {\n", vobj_i) +
+                                            String.Format("        lightened_m = lightened_m && !in_shadow_line(m, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) + 
+                                            if light_num > 0 then
+                                                "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
+                                                "            if(lightened[light_i]) {\n"+ 
+                                                String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);", vobj_i) + 
+                                                "            }\n"
+                                            else ""
+                                            + "        }\n" +
+                                            String.Format("        inside_vobj = inside_vobj && !in_shadow_line((vobj_{0}[0] + vobj_{0}[1] + vobj_{0}[2]) / 3.0, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[vertex_i]))]);\n", vobj_i) +
+                                            "    }\n" +
+                                            "    inside_object = inside_object || inside_vobj;\n"
+                                        )
                                     )
-                                )
-                            |> List.fold (fun x y -> x + y) ""
+                                |> List.fold (fun x y -> x + y) ""
+                        )
                     else ""
                 
                 let loop_circle = 
                     if circleobj_num > 0 then 
                         @"
     for(int circle_i=0; circle_i < circle_num; circle_i++) {
-        lightened_m = lightened_m && !in_shadow_circle(m, circle_pos[circle_i], circle_radius[circle_i]);" 
+        if(lightened_m) {
+            lightened_m = lightened_m && !in_shadow_circle(m, circle_pos[circle_i], circle_radius[circle_i]);
+        }"
                         + 
                         if light_num > 0 then
                             @"
         for(int light_i=0; light_i < light_num; light_i++) {
-            if(light_num > 0 && lightened[light_i]) {
-                light_inobj[light_i] = light_inobj[light_i] || in_circle_p(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]);
-                lightened[light_i] = !light_inobj[light_i] && lightened[light_i] && !in_shadow_circle(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]);
-            }"
+            if(lightened[light_i] || !light_incircle[light_i]) {
+                light_incircle[light_i] = light_incircle[light_i] || in_circle_p(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]);
+                lightened[light_i] = !light_incircle[light_i] && (lightened[light_i] && !in_shadow_circle(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]));
+            }
+        }"
                         else ""
                         + @"
-            inside_object = inside_object && !in_circle(circle_pos[circle_i], circle_radius[circle_i]);
-        }
+        inside_object = inside_object || in_circle(circle_pos[circle_i], circle_radius[circle_i]);
     }
 "
                     else ""
@@ -271,9 +279,13 @@ void main() {
             if light_num > 0 then @"
     for(int light_i=0; light_i < light_num; light_i++) {
         lightened_or = lightened_or || lightened[light_i];
-        if(lightened[light_i]|| inside_object) { 
+        if(lightened[light_i] || inside_object) { 
             brightness += light(light_pos[light_i], light_brightness[light_i]); 
         } 
+    }
+
+    if(inside_object) {
+        //brightness = 0.0;
     }
 "
             else ""

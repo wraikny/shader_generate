@@ -19,19 +19,23 @@ type Rectangle_obj(size, pos, angle) as this =
     member this.Size
         with get() = size
         and set(value) = size <- value
-
+    
     interface VertexInterface with
         member this.vertex_pos index =
+            let index = index % 4
             let d = size / 2.0f
-            let dvec vi = (vi % 4) |> function
-                | 0 -> new asd.Vector2DF(-d.X, -d.Y, Degree=this.Angle)
-                | 1 -> new asd.Vector2DF(d.X, -d.Y, Degree=this.Angle)
-                | 2 -> new asd.Vector2DF(d.X, d.Y, Degree=this.Angle)
-                | 3 -> new asd.Vector2DF(-d.X, d.Y, Degree=this.Angle)
-                | _ -> new asd.Vector2DF(0.0f, 0.0f)
+            let dv = 
+                if index = 0 then
+                    new asd.Vector2DF(-d.X, -d.Y)
+                else if index = 1 then
+                    new asd.Vector2DF(d.X, -d.Y)
+                else if index = 2 then
+                    new asd.Vector2DF(d.X, d.Y)
+                else if index = 3 then
+                    new asd.Vector2DF(-d.X, d.Y)
+                else new asd.Vector2DF(0.0f, 0.0f)
             
-
-            this.Position + d * dvec index
+            this.Position + new asd.Vector2DF(dv.X, dv.Y, Degree = dv.Degree + this.Angle)
     
 
 type Vertex_obj(vertex_list) as this =
@@ -43,6 +47,8 @@ type Vertex_obj(vertex_list) as this =
             let polygon = new asd.PolygonShape()
             vertex_list.ForEach(fun x -> polygon.AddVertex(x))
             polygon
+        this.Color <- new asd.Color(50uy, 50uy, 50uy, 255uy)
+
 
     member this.Vertex_List
         with get() = vertex_list
@@ -59,6 +65,7 @@ type Circle_obj(center, radius) as this =
     do
         this.Shape <- new asd.CircleShape(OuterDiameter=radius * 2.0f)
         this.Position <- center
+        this.Color <- new asd.Color(50uy, 50uy, 50uy, 255uy)
     
     member this.Radius
         with get() = radius
@@ -103,42 +110,50 @@ type Shader_Objects(layer : asd.Layer2D) =
         rectangle_objects.Add x
         layer.AddObject x
         this.Updated_State <- true
+        this
     
     member this.Remove x =
         rectangle_objects.Remove x
             |> ignore
         layer.RemoveObject x
         this.Updated_State <- true
+        this
 
     member this.Add x =
         vertex_objects.Add x
         layer.AddObject x
         this.Updated_State <- true
+        this
     
     member this.Remove x =
         vertex_objects.Remove x
             |> ignore
         layer.RemoveObject x
         this.Updated_State <- true
+        this
 
     member this.Add x =
         circle_objects.Add x
         layer.AddObject x
         this.Updated_State <- true
+        this
     
     member this.Remove x =
         circle_objects.Remove x
             |> ignore
         layer.RemoveObject x
         this.Updated_State <- true
+        this
 
     member this.Add x =
         light_objects.Add x
         this.Updated_State <- true
+        this
 
     member this.Remove x =
         light_objects.Remove x
             |> ignore
         this.Updated_State <- true
+        this
 
 

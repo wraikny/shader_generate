@@ -10,7 +10,6 @@ module Program =
             |> ignore
         
         let scene = new asd.Scene()
-        let layer_back = new asd.Layer2D()
         let layer = new asd.Layer2D()
 
         let obj_back =
@@ -24,32 +23,23 @@ module Program =
             let tx = asd.Engine.Graphics.CreateTexture2D("yozora800600.png")
             new asd.TextureObject2D(Texture=tx)
         
-
-        let obj = 
-            let da = new asd.RectF(100.0f, 100.0f, Width / 10.0f, Height / 10.0f)
-            let rect = new asd.RectangleShape(DrawingArea=da)
-            let col = new asd.Color(255uy, 250uy, 255uy, 155uy)
-            new asd.GeometryObject2D(Shape=rect, Color=col)
-
-        let player = new Player()
         
-
         
-        scene.AddLayer layer_back
-        // scene.AddLayer layer
+        scene.AddLayer layer
 
-        layer_back.AddObject obj_back
+        layer.AddObject obj_back
 
-        layer_back.AddObject player
+        let obj_data = new Shader_Objects(layer)
 
-        layer.AddObject obj
+        obj_data
+            .Add(new Rectangle_obj(new asd.Vector2DF(150.0f, 100.0f), WindowSize / 1.5f, 0.0f))
+            .Add(new Rectangle_obj(new asd.Vector2DF(70.0f, 150.0f), new asd.Vector2DF(0.5f, 0.8f) * WindowSize, 0.0f))
+            .Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 30.0f))
+            .Add(new Light_obj(WindowSize / 2.0f, 0.08f))
+            .Add(new Light_obj(WindowSize / 1.6f + new asd.Vector2DF(100.0f, 150.0f), 0.08f))
+                |> ignore
 
-        let obj_data = new Shader_Objects(layer_back)
-        obj_data.Add(new Rectangle_obj(new asd.Vector2DF(100.0f, 100.0f), WindowSize / 2.0f, 0.0f))
-        obj_data.Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 30.0f))
-        obj_data.Add(new Light_obj((obj_data.Rectangle_Objects.[0] :> VertexInterface).vertex_pos 0, 0.08f))
-
-        layer_back.AddPostEffect(new Custom_Post_Effect(obj_data))
+        layer.AddPostEffect(new Custom_Post_Effect(obj_data))
 
         asd.Engine.ChangeScene scene
 
