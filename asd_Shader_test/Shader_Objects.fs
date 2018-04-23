@@ -5,7 +5,7 @@ open System.Collections.Generic
 type VertexInterface =
     abstract vertex_pos : int -> asd.Vector2DF
 
-type Rectangle_obj(size, pos) as this =
+type Rectangle_obj(size, pos, angle) as this =
     inherit asd.GeometryObject2D()
     let mutable size : asd.Vector2DF = size
 
@@ -14,6 +14,7 @@ type Rectangle_obj(size, pos) as this =
         this.Shape <- new asd.RectangleShape(DrawingArea=da)
         this.Position <- pos
         this.Color <- new asd.Color(50uy, 50uy, 50uy, 255uy)
+        this.Angle <- angle
     
     member this.Size
         with get() = size

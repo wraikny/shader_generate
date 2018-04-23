@@ -45,7 +45,7 @@ module Program =
         layer.AddObject obj
 
         let obj_data = new Shader_Objects(layer_back)
-        obj_data.Add(new Rectangle_obj(new asd.Vector2DF(100.0f, 100.0f), WindowSize / 2.0f))
+        obj_data.Add(new Rectangle_obj(new asd.Vector2DF(100.0f, 100.0f), WindowSize / 2.0f, 0.0f))
         obj_data.Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 30.0f))
         obj_data.Add(new Light_obj((obj_data.Rectangle_Objects.[0] :> VertexInterface).vertex_pos 0, 0.08f))
 
