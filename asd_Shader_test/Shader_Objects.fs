@@ -21,13 +21,13 @@ type Rectangle_obj(size, pos) as this =
 
     interface VertexInterface with
         member this.vertex_pos index =
-            let d = size / 2.0f in
-            let rec dvec vi = vi |> function
+            let d = size / 2.0f
+            let dvec vi = (vi % 4) |> function
                 | 0 -> new asd.Vector2DF(-d.X, -d.Y, Degree=this.Angle)
                 | 1 -> new asd.Vector2DF(d.X, -d.Y, Degree=this.Angle)
-                | 2 -> new asd.Vector2DF(-d.X, d.Y, Degree=this.Angle)
+                | 2 -> new asd.Vector2DF(d.X, d.Y, Degree=this.Angle)
                 | 3 -> new asd.Vector2DF(-d.X, d.Y, Degree=this.Angle)
-                | n -> dvec (vi % 4)
+                | _ -> new asd.Vector2DF(0.0f, 0.0f)
             
 
             this.Position + d * dvec index
@@ -82,11 +82,6 @@ type Shader_Objects(layer : asd.Layer2D) =
     let mutable updated_state = true
     let layer = layer
 
-    // do
-        // rectangle_objects.ForEach(fun x -> layer.AddObject x)
-        // vertex_objects.ForEach(fun x -> layer.AddObject x)
-        // circle_objects.ForEach(fun x -> layer.AddObject x)
-
     member this.Rectangle_Objects
         with get() = rectangle_objects
     
@@ -135,4 +130,14 @@ type Shader_Objects(layer : asd.Layer2D) =
             |> ignore
         layer.RemoveObject x
         this.Updated_State <- true
+
+    member this.Add x =
+        light_objects.Add x
+        this.Updated_State <- true
+
+    member this.Remove x =
+        light_objects.Remove x
+            |> ignore
+        this.Updated_State <- true
+
 
