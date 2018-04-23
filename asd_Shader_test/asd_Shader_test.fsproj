@@ -53,7 +53,6 @@
     <None Include="packages.config" />
     <Compile Include="Global.fs" />
     <Compile Include="Shader_Objects.fs" />
-    <Compile Include="Player.fs" />
     <Compile Include="Custom_Post_Effect.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
