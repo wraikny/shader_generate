@@ -33,8 +33,7 @@ module Program =
 
         let player = new Player()
         
-        let objects_data = new Shader_Objects()
-        objects_data.Rectangle_Objects.Add(new Rectangle_obj(new asd.Vector2DF(100.0f, 100.0f), WindowSize / 2.0f))
+
         
         scene.AddLayer layer_back
         // scene.AddLayer layer
@@ -45,8 +44,15 @@ module Program =
 
         layer.AddObject obj
 
+        let obj_data = new Shader_Objects(layer_back)
+        obj_data.Add(new Rectangle_obj(new asd.Vector2DF(100.0f, 100.0f), WindowSize / 2.0f))
+        obj_data.Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 30.0f))
 
-        layer_back.AddPostEffect(new Custom_Post_Effect(player, objects_data))
+        (new Custom_Post_Effect(player, obj_data)).generate_shader_code()
+            |> ignore
+
+
+        //layer_back.AddPostEffect(new Custom_Post_Effect(player, obj_data))
 
         asd.Engine.ChangeScene scene
 

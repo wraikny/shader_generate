@@ -10,9 +10,8 @@ type Rectangle_obj(size, pos) as this =
     let mutable size : asd.Vector2DF = size
 
     do
-        this.Shape <-
-            let da = new asd.RectF(-size / 2.0f, size)
-            new asd.RectangleShape(DrawingArea=da)
+        let da = new asd.RectF(-size / 2.0f, size) in
+        this.Shape <- new asd.RectangleShape(DrawingArea=da)
         this.Position <- pos
         this.Color <- new asd.Color(50uy, 50uy, 50uy, 255uy)
     
@@ -22,11 +21,11 @@ type Rectangle_obj(size, pos) as this =
 
     interface VertexInterface with
         member this.vertex_pos index =
-            let d = size / 2.0f
+            let d = size / 2.0f in
             let rec dvec vi = vi |> function
-                | 0 -> new asd.Vector2DF(d, Degree=this.Angle)
+                | 0 -> new asd.Vector2DF(-d.X, -d.Y, Degree=this.Angle)
                 | 1 -> new asd.Vector2DF(d.X, -d.Y, Degree=this.Angle)
-                | 2 -> new asd.Vector2DF(d.X, d.Y, Degree=this.Angle)
+                | 2 -> new asd.Vector2DF(-d.X, d.Y, Degree=this.Angle)
                 | 3 -> new asd.Vector2DF(-d.X, d.Y, Degree=this.Angle)
                 | n -> dvec (vi % 4)
             
@@ -57,8 +56,7 @@ type Circle_obj(center, radius) as this =
     let radius : float32 = radius
 
     do
-        this.Shape <-
-            new asd.CircleShape(OuterDiameter=radius * 2.0f)
+        this.Shape <- new asd.CircleShape(OuterDiameter=radius * 2.0f)
         this.Position <- center
     
     member this.Radius
@@ -76,12 +74,18 @@ type Light_obj(position, brightness) =
         with get() = brightness
 
 
-type Shader_Objects() =
+type Shader_Objects(layer : asd.Layer2D) =
     let rectangle_objects = new List<Rectangle_obj>()
     let vertex_objects = new List<Vertex_obj>()
     let circle_objects = new List<Circle_obj>()
     let light_objects = new List<Light_obj>()
     let mutable updated_state = true
+    let layer = layer
+
+    // do
+        // rectangle_objects.ForEach(fun x -> layer.AddObject x)
+        // vertex_objects.ForEach(fun x -> layer.AddObject x)
+        // circle_objects.ForEach(fun x -> layer.AddObject x)
 
     member this.Rectangle_Objects
         with get() = rectangle_objects
@@ -89,7 +93,7 @@ type Shader_Objects() =
     member this.Vertex_Objects
         with get() = vertex_objects
 
-    member this.circle_Objects
+    member this.Circle_Objects
         with get() = circle_objects
 
     member this.Light_Objects
@@ -98,4 +102,37 @@ type Shader_Objects() =
     member this.Updated_State
         with get() = updated_state
         and set(value) = updated_state <- value
+    
+    member this.Add x =
+        rectangle_objects.Add x
+        layer.AddObject x
+        this.Updated_State <- true
+    
+    member this.Remove x =
+        rectangle_objects.Remove x
+            |> ignore
+        layer.RemoveObject x
+        this.Updated_State <- true
+
+    member this.Add x =
+        vertex_objects.Add x
+        layer.AddObject x
+        this.Updated_State <- true
+    
+    member this.Remove x =
+        vertex_objects.Remove x
+            |> ignore
+        layer.RemoveObject x
+        this.Updated_State <- true
+
+    member this.Add x =
+        circle_objects.Add x
+        layer.AddObject x
+        this.Updated_State <- true
+    
+    member this.Remove x =
+        circle_objects.Remove x
+            |> ignore
+        layer.RemoveObject x
+        this.Updated_State <- true
 
