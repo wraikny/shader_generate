@@ -1,6 +1,7 @@
 ﻿namespace shader_test
 
 open System
+open System.Linq
 open Global
 
 module Program =
@@ -32,13 +33,19 @@ module Program =
         let obj_data = new Shader_Objects(layer)
 
         obj_data
-            .Add(new Rectangle_obj(new asd.Vector2DF(150.0f, 100.0f), WindowSize / 1.5f, 0.0f))
+            .Add(new Rectangle_obj(new asd.Vector2DF(150.0f, 100.0f), WindowSize / 1.5f + new asd.Vector2DF(100.0f, 0.0f), 0.0f))
             .Add(new Rectangle_obj(new asd.Vector2DF(70.0f, 150.0f), new asd.Vector2DF(0.5f, 0.8f) * WindowSize, 0.0f))
-            .Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 30.0f))
-            .Add(new Light_obj(WindowSize / 2.0f, 0.08f))
-            .Add(new Light_obj(WindowSize / 1.6f + new asd.Vector2DF(100.0f, 150.0f), 0.08f))
+            .Add(new Vertex_obj(new asd.Vector2DF(600.0f, 150.0f) , [0..4].Select(fun x -> new asd.Vector2DF(60.0f, 0.0f, Degree=72.0f * float32 x)).ToList()))
+            .Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 60.0f))
+            .Add(new Light_obj(WindowSize / 2.0f, 0.05f))
+            .Add(new Light_obj(WindowSize / 1.6f + new asd.Vector2DF(100.0f, 150.0f), 0.03f))
+            .Add(new Light_obj(new asd.Vector2DF(100.0f, 450.0f), 0.03f))
                 |> ignore
-
+        
+        
+        //(new Custom_Post_Effect(obj_data)).generate_shader_code()
+         //   |> ignore
+        
         layer.AddPostEffect(new Custom_Post_Effect(obj_data))
 
         asd.Engine.ChangeScene scene
