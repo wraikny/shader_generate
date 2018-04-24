@@ -319,11 +319,11 @@ void main() {
     override this.OnDraw(dst, src) =
         count <- count + 1.0f / 60.0f
 
-        if objects_data.Updated_State then
+        if objects_data.updated_state then
             this.shader <- asd.Engine.Graphics.CreateShader2D(this.generate_shader_code())
             this.material2d <- asd.Engine.Graphics.CreateMaterial2D(this.shader)
 
-            objects_data.Updated_State <- false
+            objects_data.updated_state <- false
 
         this.material2d.SetTexture2D("g_texture", src)
         this.material2d.SetFloat("time", count)

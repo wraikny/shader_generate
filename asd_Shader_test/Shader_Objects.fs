@@ -5,6 +5,7 @@ open System.Collections.Generic
 type VertexInterface =
     abstract vertex_pos : int -> asd.Vector2DF
 
+
 type Rectangle_obj(size, pos, angle) as this =
     inherit asd.GeometryObject2D()
     let mutable size : asd.Vector2DF = size
@@ -83,13 +84,28 @@ type Light_obj(position, brightness) =
         with get() = brightness
 
 
-type Shader_Objects(layer : asd.Layer2D) =
+type Selectable_Type =
+    Rectangle of Rectangle_obj
+    | Vertex of Vertex_obj
+    | Circle of Circle_obj
+    | Light of Light_obj
+    | None
+
+
+type Shader_Objects(layer : asd.Layer2D) as this =
     let rectangle_objects = new List<Rectangle_obj>()
     let vertex_objects = new List<Vertex_obj>()
     let circle_objects = new List<Circle_obj>()
     let light_objects = new List<Light_obj>()
-    let mutable updated_state = true
     let layer = layer
+
+    [<DefaultValue>] val mutable selected_obj : Selectable_Type
+
+
+    [<DefaultValue>] val mutable updated_state : bool
+
+    do
+        this.updated_state <- true
 
     member this.Rectangle_Objects
         with get() = rectangle_objects
@@ -102,59 +118,63 @@ type Shader_Objects(layer : asd.Layer2D) =
 
     member this.Light_Objects
         with get() = light_objects
-
-    member this.Updated_State
-        with get() = updated_state
-        and set(value) = updated_state <- value
     
     member this.Add x =
         rectangle_objects.Add x
         layer.AddObject x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
     
     member this.Remove x =
         rectangle_objects.Remove x
             |> ignore
         layer.RemoveObject x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
 
     member this.Add x =
         vertex_objects.Add x
         layer.AddObject x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
     
     member this.Remove x =
         vertex_objects.Remove x
             |> ignore
         layer.RemoveObject x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
 
     member this.Add x =
         circle_objects.Add x
         layer.AddObject x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
     
     member this.Remove x =
         circle_objects.Remove x
             |> ignore
         layer.RemoveObject x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
 
     member this.Add x =
         light_objects.Add x
-        this.Updated_State <- true
+        this.updated_state <- true
         this
 
     member this.Remove x =
         light_objects.Remove x
             |> ignore
-        this.Updated_State <- true
+        this.updated_state <- true
         this
+
+    member this.hoge() =
+        let x = this.selected_obj |> function
+            | None -> 1
+            | Rectangle(obj) -> 2
+            | _ -> 0
+        
+        ()
 
 

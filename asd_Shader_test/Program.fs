@@ -13,6 +13,7 @@ module Program =
         let scene = new asd.Scene()
         let layer = new asd.Layer2D()
 
+
         let obj_back =
             let da = new asd.RectF(0.0f, 0.0f, Width, Height)
             let rect = new asd.RectangleShape(DrawingArea=da)
@@ -28,6 +29,7 @@ module Program =
         
         scene.AddLayer layer
 
+
         layer.AddObject obj_back
 
         let obj_data = new Shader_Objects(layer)
@@ -37,16 +39,16 @@ module Program =
             .Add(new Rectangle_obj(new asd.Vector2DF(70.0f, 150.0f), new asd.Vector2DF(0.5f, 0.8f) * WindowSize, 0.0f))
             .Add(new Vertex_obj(new asd.Vector2DF(600.0f, 150.0f) , [0..4].Select(fun x -> new asd.Vector2DF(60.0f, 0.0f, Degree=72.0f * float32 x)).ToList()))
             .Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 60.0f))
-            .Add(new Light_obj(WindowSize / 2.0f, 0.05f))
+            .Add(new Light_obj(WindowSize / 2.0f, 0.1f))
             .Add(new Light_obj(WindowSize / 1.6f + new asd.Vector2DF(100.0f, 150.0f), 0.03f))
             .Add(new Light_obj(new asd.Vector2DF(100.0f, 450.0f), 0.03f))
                 |> ignore
         
         
-        //(new Custom_Post_Effect(obj_data)).generate_shader_code()
-         //   |> ignore
-        
         layer.AddPostEffect(new Custom_Post_Effect(obj_data))
+
+        let layer_edit = new Edit_Layer(obj_data)
+        scene.AddLayer layer_edit
 
         asd.Engine.ChangeScene scene
 

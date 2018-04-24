@@ -54,6 +54,8 @@
     <Compile Include="Global.fs" />
     <Compile Include="Shader_Objects.fs" />
     <Compile Include="Custom_Post_Effect.fs" />
+    <Compile Include="Button.fs" />
+    <Compile Include="Edit_Layer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />
