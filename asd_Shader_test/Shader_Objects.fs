@@ -38,11 +38,12 @@ type Rectangle_obj(size, pos, angle) as this =
             this.Position + new asd.Vector2DF(dv.X, dv.Y, Degree = dv.Degree + this.Angle)
     
 
-type Vertex_obj(vertex_list) as this =
+type Vertex_obj(pos, vertex_list) as this =
     inherit asd.GeometryObject2D()
     let vertex_list : List<asd.Vector2DF> = vertex_list
 
     do
+        this.Position <- pos
         this.Shape <- 
             let polygon = new asd.PolygonShape()
             vertex_list.ForEach(fun x -> polygon.AddVertex(x))
@@ -55,7 +56,7 @@ type Vertex_obj(vertex_list) as this =
 
     interface VertexInterface with
         member this.vertex_pos index =
-            vertex_list.[index % vertex_list.Count]
+            this.Position + vertex_list.[index % vertex_list.Count]
 
 
 type Circle_obj(center, radius) as this =

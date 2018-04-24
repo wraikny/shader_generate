@@ -151,7 +151,6 @@ void main() {
             let join_vertex_obj =
                 let fvertex_i x = (objects_data.Vertex_Objects.[x]).Vertex_List.Count
                 let vertex_obj_join (vobj_i : int) =
-
                     let vertex_i = fvertex_i vobj_i
                     String.Format("    vec2 vobj_{0}[{1}] = vec2[]({2});\n", 
                                   vobj_i, 
@@ -188,25 +187,23 @@ void main() {
                     if rectobj_num > 0 then
                         "    bool inside_rectobj;\n" + (
                             [0..rectobj_num-1]
-                                |> List.map (fun rectobj_i -> 
-                                        (
-                                            "    inside_rectobj = true;\n" +
-                                            "    for(int rect_i=0; rect_i < 4; rect_i++) {\n" +
-                                            String.Format("        lightened_m = lightened_m && !in_shadow_line(m, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
+                                |> List.map (fun rectobj_i ->
+                                    "    inside_rectobj = true;\n" +
+                                    "    for(int rect_i=0; rect_i < 4; rect_i++) {\n" +
+                                    String.Format("        lightened_m = lightened_m && !in_shadow_line(m, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
 
-                                            if light_num > 0 then
-                                                "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
-                                                "            if(lightened[light_i]) {\n" +
-                                                String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
-                                                "            }\n" +
-                                                "        }\n"
-                                            else ""
-                                            + String.Format("        inside_rectobj = inside_rectobj && !in_shadow_line((rectobj_{0}[0] + rectobj_{0}[2] ) / 2.0, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) +
-                                            "    }\n" +
-                                            "    inside_object = inside_object || inside_rectobj;\n"
-                                        )
-                                    )
-                                |> List.fold (fun x y -> x + y) ""
+                                    if light_num > 0 then
+                                        "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
+                                        "            if(lightened[light_i]) {\n" +
+                                        String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
+                                        "            }\n        }\n"
+                                    else ""
+
+                                    + String.Format("        inside_rectobj = inside_rectobj && !in_shadow_line((rectobj_{0}[0] + rectobj_{0}[2] ) / 2.0, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) +
+                                    "    }\n" +
+                                    "    inside_object = inside_object || inside_rectobj;\n"
+                                )
+                                |> String.concat ""
                         )
                     else ""
                 
@@ -215,23 +212,22 @@ void main() {
                         "    bool inside_vobj;\n" + (
                             [0..vobj_num-1]
                                 |> List.map (fun vobj_i ->
-                                        (
-                                            "    inside_vobj = true;\n" +
-                                            String.Format("    for(int vertex_i=0; vertex_i < vertex_num[{0}]; vertex_i++) {\n", vobj_i) +
-                                            String.Format("        lightened_m = lightened_m && !in_shadow_line(m, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) + 
-                                            if light_num > 0 then
-                                                "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
-                                                "            if(lightened[light_i]) {\n"+ 
-                                                String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);", vobj_i) + 
-                                                "            }\n"
-                                            else ""
-                                            + "        }\n" +
-                                            String.Format("        inside_vobj = inside_vobj && !in_shadow_line((vobj_{0}[0] + vobj_{0}[1] + vobj_{0}[2]) / 3.0, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[vertex_i]))]);\n", vobj_i) +
-                                            "    }\n" +
-                                            "    inside_object = inside_object || inside_vobj;\n"
-                                        )
-                                    )
-                                |> List.fold (fun x y -> x + y) ""
+                                    "    inside_vobj = true;\n" +
+                                    String.Format("    for(int vertex_i=0; vertex_i < vertex_num[{0}]; vertex_i++) {{\n", vobj_i) + // {{ : escape for the Format
+                                    String.Format("        lightened_m = lightened_m && !in_shadow_line(m, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) + 
+
+                                    if light_num > 0 then
+                                        "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
+                                        "            if(lightened[light_i]) {\n"+ 
+                                        String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);", vobj_i) + 
+                                        "            }\n        }\n"
+                                    else ""
+
+                                    + String.Format("        inside_vobj = inside_vobj && !in_shadow_line((vobj_{0}[0] + vobj_{0}[1] + vobj_{0}[2]) / 3.0, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) +
+                                    "    }\n" +
+                                    "    inside_object = inside_object || inside_vobj;\n"
+                                )
+                                |> String.concat ""
                         )
                     else ""
                 
@@ -337,12 +333,12 @@ void main() {
         for index in [0..objects_data.Rectangle_Objects.Count-1] do
             let rectobj = objects_data.Rectangle_Objects.[index] in
             for index_r in [0..4-1] do
-                this.material2d.SetVector2DF(String.Format("rectobj_{0}_{1}", index, index_r), ((rectobj :> VertexInterface).vertex_pos index_r))
+                this.material2d.SetVector2DF(String.Format("rectobj_{0}_{1}", index, index_r), (rectobj :> VertexInterface).vertex_pos index_r)
         
         for index in [0..objects_data.Vertex_Objects.Count-1] do
             let vobj = objects_data.Vertex_Objects.[index] in
             for index_r in [0..vobj.Vertex_List.Count-1] do
-                this.material2d.SetVector2DF(String.Format("vobj_{0}_{1}", index, index_r), ((vobj :> VertexInterface).vertex_pos index_r))
+                this.material2d.SetVector2DF(String.Format("vobj_{0}_{1}", index, index_r), (vobj :> VertexInterface).vertex_pos index_r)
         
         for index in [0..objects_data.Circle_Objects.Count-1] do
             let circleobj = objects_data.Circle_Objects.[index]
