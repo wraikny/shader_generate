@@ -41,11 +41,11 @@
     <Reference Include="System.ValueTuple">
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
     </Reference>
-    <Reference Include="Altseed">
-      <HintPath>..\packages\AltseedDotNet.1.1.0.2\lib\net45\Altseed.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Altseed">
+      <HintPath>Altseed.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -54,10 +54,16 @@
     <Compile Include="Global.fs" />
     <Compile Include="Shader_Objects.fs" />
     <Compile Include="Custom_Post_Effect.fs" />
-    <Compile Include="Button.fs" />
+    <Compile Include="Edit_Camera.fs" />
     <Compile Include="Edit_Layer.fs" />
+    <Compile Include="Editor_Scene.fs" />
     <Compile Include="Program.fs" />
+    <None Include="Altseed.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="libAltseed_core.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(FSharpTargetsPath)" />
-  <Import Project="..\packages\AltseedDotNet.1.1.0.2\build\net45\AltseedDotNet.targets" Condition="Exists('..\packages\AltseedDotNet.1.1.0.2\build\net45\AltseedDotNet.targets')" />
 </Project>

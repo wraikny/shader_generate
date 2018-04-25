@@ -45,3 +45,17 @@ module Global =
         else
             let v = byte v
             new asd.Color(v, v, v, a)
+
+    let otherside_of_line p ls v1 v2 =
+        let A : asd.Vector2DF = v2 - v1
+        let B : asd.Vector2DF = p - ls
+        let C = new asd.Vector2DF(A.Y, -A.X)
+        let D = new asd.Vector2DF(B.Y, -B.X)
+
+        let dot (a : asd.Vector2DF) (b : asd.Vector2DF) =
+            a.X * b.X + a.Y * b.Y
+        
+        let dist = (dot (v1 - ls) C) / (dot B C)
+        let range = (dot (ls - v1) D) / (dot A D)
+
+        0.0f < dist && dist < 1.0f && 0.0f < range && range < 1.0f

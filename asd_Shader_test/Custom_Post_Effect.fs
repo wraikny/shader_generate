@@ -45,7 +45,7 @@ float light(vec2 s, float b) {
     return b / length(p - s);
 }
 
-bool out_of_line(vec2 p, vec2 ls, vec2 v1, vec2 v2) {
+bool otherside_of_line(vec2 p, vec2 ls, vec2 v1, vec2 v2) {
     vec2 A = v2 - v1;
     vec2 B = p - ls;
     vec2 C = vec2(A.y, -A.x);
@@ -58,11 +58,11 @@ bool out_of_line(vec2 p, vec2 ls, vec2 v1, vec2 v2) {
 }
 
 bool in_object_line(vec2 inside_p, vec2 ls, vec2 v1, vec2 v2) {
-    return out_of_line(ls, inside_p, v1, v2);
+    return otherside_of_line(ls, inside_p, v1, v2);
 }
 
 bool in_shadow_line(vec2 ls, vec2 v1, vec2 v2) {
-    return out_of_line(normalized_inPosition(), ls, v1, v2);
+    return otherside_of_line(normalized_inPosition(), ls, v1, v2);
 }
 
 bool in_circle_p(vec2 p, vec2 center, float radius) {
@@ -96,7 +96,7 @@ void main() {
     vec2 p = normalized_inPosition();
     vec2 m = normalize(mouse);
     float brightness = 0.0;
-    bool lightened_m = true, inside_object = false;
+    bool inside_object = false;
 
 "
         let rectobj_num = objects_data.Rectangle_Objects.Count
@@ -190,7 +190,6 @@ void main() {
                                 |> List.map (fun rectobj_i ->
                                     "    inside_rectobj = true;\n" +
                                     "    for(int rect_i=0; rect_i < 4; rect_i++) {\n" +
-                                    String.Format("        lightened_m = lightened_m && !in_shadow_line(m, rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
 
                                     if light_num > 0 then
                                         "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
@@ -214,7 +213,6 @@ void main() {
                                 |> List.map (fun vobj_i ->
                                     "    inside_vobj = true;\n" +
                                     String.Format("    for(int vertex_i=0; vertex_i < vertex_num[{0}]; vertex_i++) {{\n", vobj_i) + // {{ : escape for the Format
-                                    String.Format("        lightened_m = lightened_m && !in_shadow_line(m, vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);\n", vobj_i) + 
 
                                     if light_num > 0 then
                                         "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
@@ -234,10 +232,7 @@ void main() {
                 let loop_circle = 
                     if circleobj_num > 0 then 
                         @"
-    for(int circle_i=0; circle_i < circle_num; circle_i++) {
-        if(lightened_m) {
-            lightened_m = lightened_m && !in_shadow_circle(m, circle_pos[circle_i], circle_radius[circle_i]);
-        }"
+    for(int circle_i=0; circle_i < circle_num; circle_i++) {"
                         + 
                         if light_num > 0 then
                             @"
@@ -264,11 +259,6 @@ void main() {
         let light_shadow_generated_foot_gl = 
             @"
     bool lightened_or = false;
-
-    if(lightened_m || inside_object) {
-        brightness += light(m, 0.08);
-    }
-    lightened_or = lightened_or || lightened_m;
 "
             +
 
@@ -312,7 +302,10 @@ void main() {
             light_shadow_head_gl + 
             light_shadow_generated_main_gl + 
             light_shadow_generated_foot_gl
+        
+        #if DEBUG
         System.Console.WriteLine result
+        #endif
 
         result
 
@@ -343,7 +336,7 @@ void main() {
         for index in [0..objects_data.Circle_Objects.Count-1] do
             let circleobj = objects_data.Circle_Objects.[index]
             this.material2d.SetVector2DF(String.Format("circle_pos_{0}", index), circleobj.Position)
-            this.material2d.SetFloat(String.Format("circle_radius_{0}", index), circleobj.Radius)
+            this.material2d.SetFloat(String.Format("circle_radius_{0}", index), circleobj.radius)
         
         for index in [0..objects_data.Light_Objects.Count-1] do
             let lightobj = objects_data.Light_Objects.[index]
