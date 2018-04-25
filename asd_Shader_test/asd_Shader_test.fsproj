@@ -52,9 +52,9 @@
     <Compile Include="AssemblyInfo.fs" />
     <None Include="packages.config" />
     <Compile Include="Global.fs" />
+    <Compile Include="Edit_Camera.fs" />
     <Compile Include="Shader_Objects.fs" />
     <Compile Include="Custom_Post_Effect.fs" />
-    <Compile Include="Edit_Camera.fs" />
     <Compile Include="Edit_Layer.fs" />
     <Compile Include="Editor_Scene.fs" />
     <Compile Include="Program.fs" />

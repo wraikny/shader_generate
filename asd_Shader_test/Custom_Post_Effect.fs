@@ -5,10 +5,11 @@ open System
 open System.Linq
 open System.Collections.Generic
 
-type Custom_Post_Effect(objects_data) =
+type Custom_Post_Effect(objects_data, camera_pos) =
     inherit asd.PostEffect()
 
     let objects_data : Shader_Objects = objects_data
+    let camera_pos : Camera_Pos = camera_pos
 
     [<DefaultValue>]val mutable shader : asd.Shader2D
     [<DefaultValue>]val mutable material2d : asd.Material2D
@@ -326,21 +327,21 @@ void main() {
         for index in [0..objects_data.Rectangle_Objects.Count-1] do
             let rectobj = objects_data.Rectangle_Objects.[index] in
             for index_r in [0..4-1] do
-                this.material2d.SetVector2DF(String.Format("rectobj_{0}_{1}", index, index_r), (rectobj :> VertexInterface).vertex_pos index_r)
+                this.material2d.SetVector2DF(String.Format("rectobj_{0}_{1}", index, index_r), (rectobj :> VertexInterface).vertex_pos index_r - camera_pos.position.To2DF())
         
         for index in [0..objects_data.Vertex_Objects.Count-1] do
             let vobj = objects_data.Vertex_Objects.[index] in
             for index_r in [0..vobj.Vertex_List.Count-1] do
-                this.material2d.SetVector2DF(String.Format("vobj_{0}_{1}", index, index_r), (vobj :> VertexInterface).vertex_pos index_r)
+                this.material2d.SetVector2DF(String.Format("vobj_{0}_{1}", index, index_r), (vobj :> VertexInterface).vertex_pos index_r - camera_pos.position.To2DF())
         
         for index in [0..objects_data.Circle_Objects.Count-1] do
             let circleobj = objects_data.Circle_Objects.[index]
-            this.material2d.SetVector2DF(String.Format("circle_pos_{0}", index), circleobj.Position)
-            this.material2d.SetFloat(String.Format("circle_radius_{0}", index), circleobj.radius)
+            this.material2d.SetVector2DF(String.Format("circle_pos_{0}", index), circleobj.Position - camera_pos.position.To2DF())
+            this.material2d.SetFloat(String.Format("circle_radius_{0}", index), circleobj.Radius)
         
         for index in [0..objects_data.Light_Objects.Count-1] do
             let lightobj = objects_data.Light_Objects.[index]
-            this.material2d.SetVector2DF(String.Format("light_pos_{0}", index), lightobj.Position)
+            this.material2d.SetVector2DF(String.Format("light_pos_{0}", index), lightobj.Position - camera_pos.position.To2DF())
             this.material2d.SetFloat(String.Format("light_brightness_{0}", index), lightobj.Brightness)
             
 

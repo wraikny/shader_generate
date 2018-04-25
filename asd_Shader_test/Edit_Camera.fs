@@ -3,15 +3,16 @@
 open System
 open Global
 
-type Edit_Camera() =
+type Camera_Pos =
+    val mutable position : asd.Vector2DI
+    new() = {position = new asd.Vector2DI(0, 0)}
+
+type Edit_Camera(camera_pos) =
     inherit asd.CameraObject2D()
+    let cameta_pos : Camera_Pos = camera_pos
 
-    let mutable position = new asd.Vector2DF(0.0f, 0.0f)
-
-    member this.Position
-        with get() = position
-        and set(value) = position <- value
-
+    override this.OnAdded() =
+        this.Dst <- new asd.RectI(new asd.Vector2DI(0, 0), WindowSize.To2DI())
     override this.OnUpdate() =
-        this.Src <- new asd.RectI(position.To2DI(), WindowSize.To2DI())
+        this.Src <- new asd.RectI(camera_pos.position, WindowSize.To2DI())
         ()

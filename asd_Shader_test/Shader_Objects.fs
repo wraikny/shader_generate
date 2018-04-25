@@ -9,11 +9,14 @@ type VertexInterface =
     abstract vertex_pos : int -> asd.Vector2DF
 
 [<AbstractClass>]
-type Base_Shader_Object() =
+type Base_Shader_Object() as this =
     inherit asd.GeometryObject2D()
-    member this.color = new asd.Color(50uy, 50uy, 50uy, 255uy)
-    // member this.selected_color = new asd.Color(100uy, 250uy, 100uy, 255uy)
-    member this.selected_color = new asd.Color(50uy, 50uy, 50uy, 255uy)
+    [<DefaultValue>] val mutable color : asd.Color
+    [<DefaultValue>] val mutable selected_color : asd.Color
+
+    do
+        this.color <- new asd.Color(120uy, 120uy, 120uy, 255uy)
+        this.selected_color <- new asd.Color(250uy, 255uy, 0uy, 255uy)
 
     abstract change_color_free : unit -> unit
     default this.change_color_free () =
@@ -25,11 +28,8 @@ type Base_Shader_Object() =
 
     abstract has_point_inside : asd.Vector2DF -> bool
 
-    abstract rotate : float32 -> unit
-
-    abstract class_name : unit -> string
-    default this.class_name() =
-        "Base_Shader_Object"
+    abstract class_name : string
+    default this.class_name = "Base_Shader_Object"
 
 
 type Rectangle_obj(size, pos, angle) as this =
@@ -46,7 +46,10 @@ type Rectangle_obj(size, pos, angle) as this =
     
     member this.Size
         with get() = size
-        and set(value) = size <- value
+        and set(value) =
+            let da = new asd.RectF(-value / 2.0f, value) in
+            this.Shape <- new asd.RectangleShape(DrawingArea=da)
+            size <- value
     
     interface VertexInterface with
         member this.vertex_pos index =
@@ -73,11 +76,8 @@ type Rectangle_obj(size, pos, angle) as this =
         let f x = otherside_of_line point inside_p (v_pos x) <| v_pos (x+1)
 
         [0..3].Any(fun x -> f x) |> not
-    
-    override this.rotate dangle =
-        this.Angle <- this.Angle + dangle
 
-    override this.class_name() =
+    override this.class_name =
         "Rectangle"
 
 
@@ -100,42 +100,44 @@ type Vertex_obj(pos, vertex_list) as this =
 
     interface VertexInterface with
         member this.vertex_pos index =
-            this.Position + vertex_list.[index % vertex_list.Count]
+            let vec = vertex_list.[index % vertex_list.Count]
+            this.Position + new asd.Vector2DF(vec.X, vec.Y, Degree=vec.Degree + this.Angle)
     
     override this.has_point_inside point =
         let v_pos index =
             (this :> VertexInterface).vertex_pos index
         let inside_p = 
-            this.Position + vertex_list.Aggregate(new asd.Vector2DF(0.0f, 0.0f), fun sum x -> sum + x) / float32 vertex_list.Count
+            let vec = vertex_list.Aggregate(new asd.Vector2DF(0.0f, 0.0f), fun sum x -> sum + x)
+            this.Position + new asd.Vector2DF(vec.X, vec.Y, Degree=vec.Degree + this.Angle) / float32 vertex_list.Count
 
         let f x = otherside_of_line point inside_p (v_pos x) <| v_pos (x+1)
 
-        [0..3].Any(fun x -> f x) |> not
-
-    override this.rotate dangle =
-        this.Angle <- this.Angle + dangle
-
-    override this.class_name() =
+        [0..vertex_list.Count-1].Any(fun x -> f x) |> not
+    
+    override this.class_name =
         "Vertex"
         
 
 type Circle_obj(center, radius) as this =
     inherit Base_Shader_Object()
 
+    let mutable radius = radius
+
     do
         this.Shape <- new asd.CircleShape(OuterDiameter=radius * 2.0f)
         this.Position <- center
         this.Color <- this.color
 
-    member this.radius = radius
+    member this.Radius
+        with get() = radius
+        and set(value) =
+            this.Shape <- new asd.CircleShape(OuterDiameter=value * 2.0f)
+            radius <- value
 
     override this.has_point_inside point =
         (this.Position - point).SquaredLength < radius * radius
-
-    override this.rotate dangle =
-        this.Angle <- this.Angle + dangle
-
-    override this.class_name() =
+    
+    override this.class_name =
         "Circle"
         
 
@@ -144,31 +146,25 @@ type Light_obj(position, brightness) as this =
     inherit Base_Shader_Object()
 
     let mutable position : asd.Vector2DF = position
-    let brightness : float32 = brightness
+    let mutable brightness : float32 = brightness
 
     do
         this.Shape <- new asd.CircleShape(OuterDiameter=10.0f * 2.0f)
         this.Position <- position
         this.Color <- new asd.Color(0uy, 0uy, 0uy, 0uy)
-
-    member this.Position
-        with get() = position
-        and set(value) = position <- value
     
     member this.Brightness
         with get() = brightness
+        and set(value) = brightness <- value
+
+    default this.change_color_free () =
+        this.Color <- new asd.Color(0uy, 0uy, 0uy, 0uy)
     
     override this.has_point_inside point =
         let radius = 5.0f
         (this.Position - point).SquaredLength < radius * radius
 
-    override this.change_color_free() =
-        this.Color <- new asd.Color(255uy, 0uy, 0uy, 0uy)
-
-    override this.rotate dangle =
-        this.Angle <- this.Angle + dangle
-
-    override this.class_name() =
+    override this.class_name =
         "Light"
 
 
