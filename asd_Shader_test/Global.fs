@@ -10,15 +10,19 @@ module Global =
 
     let KeyPush key =
         asd.Engine.Keyboard.GetKeyState key = asd.KeyState.Push
-    
     let KeyHold key =
         asd.Engine.Keyboard.GetKeyState key = asd.KeyState.Hold
-    
     let KeyRelease key =
         asd.Engine.Keyboard.GetKeyState key = asd.KeyState.Release
-    
     let KeyFree key =
         asd.Engine.Keyboard.GetKeyState key = asd.KeyState.Free
+
+    let MouseLeftPushed () =
+        asd.Engine.Mouse.GetButtonInputState asd.MouseButtons.ButtonLeft = asd.MouseButtonState.Push
+    let MouseLeftHold () =
+        asd.Engine.Mouse.GetButtonInputState asd.MouseButtons.ButtonLeft = asd.MouseButtonState.Hold
+    let MouseLeftReleased () =
+        asd.Engine.Mouse.GetButtonInputState asd.MouseButtons.ButtonLeft = asd.MouseButtonState.Release
     
     let HSVtoRGB(h : byte, s: byte, v: byte, a : byte) : asd.Color =
         let func x = float32(x) / 255.0f

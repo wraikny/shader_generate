@@ -26,20 +26,12 @@ type Editor_Scene() as this =
         let WindowSize_ = new asd.Vector2DF(Height, Height)
         obj_data
             .Add(new Rectangle_obj(new asd.Vector2DF(70.0f, 150.0f), new asd.Vector2DF(0.5f, 0.8f) * WindowSize_, 0.0f))
-            .Add(new Vertex_obj(new asd.Vector2DF(500.0f, 150.0f) , [0..4].Select(fun x -> new asd.Vector2DF(60.0f, 0.0f, Degree=72.0f * float32 x)).ToList()))
+            .Add(new Polygon_obj(new asd.Vector2DF(500.0f, 150.0f) , [0..4].Select(fun x -> new asd.Vector2DF(60.0f, 0.0f, Degree=72.0f * float32 x)).ToList(), layer_edit))
             .Add(new Circle_obj(new asd.Vector2DF(250.0f, 250.0f), 60.0f))
-            .Add(new Light_obj(new asd.Vector2DF(100.0f, 450.0f), 0.03f))
-            .Add(new Light_obj(new asd.Vector2DF(400.0f, 150.0f), 0.05f))
-            .Add(new Light_obj(new asd.Vector2DF(470.0f, 350.0f), 0.05f))
+            .Add(new Light_obj(new asd.Vector2DF(100.0f, 450.0f), 30.0f, layer_edit))
+            .Add(new Light_obj(new asd.Vector2DF(400.0f, 150.0f), 50.0f, layer_edit))
+            .Add(new Light_obj(new asd.Vector2DF(470.0f, 350.0f), 50.0f, layer_edit))
                 |> ignore
-
-        
-
-        let add_softlight pos br =
-            let n = 12
-            let br = br / float32 n
-            obj_data.Add(new Light_obj(pos, br)) |> ignore
-            [1..n].ToList().ForEach(fun x -> obj_data.Add(new Light_obj(pos + new asd.Vector2DF(5.0f, 0.0f, Degree=360.0f / float32 n * float32 x), br)) |> ignore)
         
         layer.AddPostEffect(new Custom_Post_Effect(obj_data, camera_pos))
 

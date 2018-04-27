@@ -101,7 +101,7 @@ void main() {
 
 "
         let rectobj_num = objects_data.Rectangle_Objects.Count
-        let vobj_num = objects_data.Vertex_Objects.Count
+        let vobj_num = objects_data.Polygon_Objects.Count
         let circleobj_num = objects_data.Circle_Objects.Count
         let light_num = objects_data.Light_Objects.Count
 
@@ -116,7 +116,7 @@ void main() {
             
             let join_vertex_uniform =
                 let vertex_uniform_join vobj_i =
-                    let vertex_i = (objects_data.Vertex_Objects.[vobj_i]).Vertex_List.Count
+                    let vertex_i = (objects_data.Polygon_Objects.[vobj_i]).Vertex_List.Count
                     [0..vertex_i-1].Select(fun x -> String.Format("uniform vec2 vobj_{0}_{1};\n", vobj_i, x)) |> String.concat ""
                 [0..vobj_num-1].Select(vertex_uniform_join) |> String.concat ""
                
@@ -150,7 +150,7 @@ void main() {
             
             
             let join_vertex_obj =
-                let fvertex_i x = (objects_data.Vertex_Objects.[x]).Vertex_List.Count
+                let fvertex_i x = (objects_data.Polygon_Objects.[x]).Vertex_List.Count
                 let vertex_obj_join (vobj_i : int) =
                     let vertex_i = fvertex_i vobj_i
                     String.Format("    vec2 vobj_{0}[{1}] = vec2[]({2});\n", 
@@ -176,12 +176,10 @@ void main() {
                 String.Format("    int light_num = {0};\n", light_num) +
                 if light_num > 0 then
                     String.Format("    bool lightened[{0}] = bool[]({1});\n", light_num, [0..light_num-1].Select(fun x -> "true") |> String.concat ", ") +
-                    String.Format("    bool light_incircle[{0}] = bool[]({1});\n", light_num, [0..light_num-1].Select(fun x -> "false") |> String.concat ", ") +
                     String.Format("    vec2 light_pos[{0}] = vec2[]({1});\n", light_num, [0..light_num-1].Select(fun x -> String.Format("normalize(light_pos_{0})", x)) |> String.concat ", ") +
                     String.Format("    float light_brightness[{0}] = float[]({1});\n\n", light_num, [0..light_num-1].Select(fun x -> String.Format("light_brightness_{0}", x)) |> String.concat ", ")
                 else "\n"
-
-
+            
             
             let main_loop =
                 let loop_rect =
@@ -195,7 +193,7 @@ void main() {
                                     if light_num > 0 then
                                         "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
                                         "            if(lightened[light_i]) {\n" +
-                                        String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
+                                        String.Format("                lightened[light_i] = lightened[light_i] && !in_shadow_line(light_pos[light_i], rectobj_{0}[rect_i], rectobj_{0}[int(mod((rect_i+1), 4))]);\n", rectobj_i) + 
                                         "            }\n        }\n"
                                     else ""
 
@@ -209,16 +207,18 @@ void main() {
                 
                 let loop_vertex =
                     if vobj_num > 0 then
-                        "    bool inside_vobj;\n" + (
+                        "    bool inside_vobj;\n" + 
+                        "    vec2 inside_point;\n" + (
                             [0..vobj_num-1]
                                 |> List.map (fun vobj_i ->
                                     "    inside_vobj = true;\n" +
+                                    "    " +
                                     String.Format("    for(int vertex_i=0; vertex_i < vertex_num[{0}]; vertex_i++) {{\n", vobj_i) + // {{ : escape for the Format
 
                                     if light_num > 0 then
                                         "        for(int light_i=0; light_i < light_num; light_i++) {\n" +
                                         "            if(lightened[light_i]) {\n"+ 
-                                        String.Format("                lightened[light_i] = !light_incircle[light_i] && lightened[light_i] && !in_shadow_line(light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);", vobj_i) + 
+                                        String.Format("                lightened[light_i] = lightened[light_i] && !in_shadow_line(light_pos[light_i], vobj_{0}[vertex_i], vobj_{0}[int(mod((vertex_i+1), vertex_num[{0}]))]);", vobj_i) + 
                                         "            }\n        }\n"
                                     else ""
 
@@ -238,9 +238,8 @@ void main() {
                         if light_num > 0 then
                             @"
         for(int light_i=0; light_i < light_num; light_i++) {
-            if(lightened[light_i] || !light_incircle[light_i]) {
-                light_incircle[light_i] = light_incircle[light_i] || in_circle_p(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]);
-                lightened[light_i] = !light_incircle[light_i] && (lightened[light_i] && !in_shadow_circle(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]));
+            if(lightened[light_i]) {
+                lightened[light_i] = lightened[light_i] && !in_shadow_circle(light_pos[light_i], circle_pos[circle_i], circle_radius[circle_i]);
             }
         }"
                         else ""
@@ -250,8 +249,6 @@ void main() {
 "
                     else ""
 
-
-                
                 loop_circle + loop_rect + loop_vertex
 
             join_rectangle_obj + join_vertex_obj + join_circle_obj + join_light_obj + main_loop
@@ -313,11 +310,11 @@ void main() {
     override this.OnDraw(dst, src) =
         count <- count + 1.0f / 60.0f
 
-        if objects_data.updated_state then
+        if objects_data.Updated_State then
             this.shader <- asd.Engine.Graphics.CreateShader2D(this.generate_shader_code())
             this.material2d <- asd.Engine.Graphics.CreateMaterial2D(this.shader)
 
-            objects_data.updated_state <- false
+            objects_data.Updated_State <- false
 
         this.material2d.SetTexture2D("g_texture", src)
         this.material2d.SetFloat("time", count)
@@ -329,8 +326,8 @@ void main() {
             for index_r in [0..4-1] do
                 this.material2d.SetVector2DF(String.Format("rectobj_{0}_{1}", index, index_r), (rectobj :> VertexInterface).vertex_pos index_r - camera_pos.position.To2DF())
         
-        for index in [0..objects_data.Vertex_Objects.Count-1] do
-            let vobj = objects_data.Vertex_Objects.[index] in
+        for index in [0..objects_data.Polygon_Objects.Count-1] do
+            let vobj = objects_data.Polygon_Objects.[index] in
             for index_r in [0..vobj.Vertex_List.Count-1] do
                 this.material2d.SetVector2DF(String.Format("vobj_{0}_{1}", index, index_r), (vobj :> VertexInterface).vertex_pos index_r - camera_pos.position.To2DF())
         
@@ -342,7 +339,7 @@ void main() {
         for index in [0..objects_data.Light_Objects.Count-1] do
             let lightobj = objects_data.Light_Objects.[index]
             this.material2d.SetVector2DF(String.Format("light_pos_{0}", index), lightobj.Position - camera_pos.position.To2DF())
-            this.material2d.SetFloat(String.Format("light_brightness_{0}", index), lightobj.Brightness)
+            this.material2d.SetFloat(String.Format("light_brightness_{0}", index), lightobj.Brightness / 1000.0f)
             
 
         this.DrawOnTexture2DWithMaterial(dst, this.material2d)

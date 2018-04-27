@@ -16,8 +16,7 @@ module Program =
         asd.Engine.ChangeScene scene
 
         let rec loop() =
-            if Global.KeyPush asd.Keys.Escape then()
-            elif asd.Engine.DoEvents() then
+            if asd.Engine.DoEvents() then
                 asd.Engine.Update()
                 loop()
         loop()
